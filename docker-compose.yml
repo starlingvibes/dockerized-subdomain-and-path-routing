@@ -7,18 +7,20 @@ services:
       - '80:80'
       - '8090:81'
       - '443:443'
+    environment:
+      POSTGRES_DB: hng_devops_app
+      POSTGRES_USER: starlingroot
+      POSTGRES_PASSWORD: starlingroot
     volumes:
       - ./data:/data
       - ./letsencrypt:/etc/letsencrypt
-    networks:
-      - devops-2
+    depends_on:
+      - postgresdb
   adminer:
     image: adminer
     restart: always
     ports:
       - 8080:8080
-    networks:
-      - devops-2
   postgresdb:
     image: postgres:latest
     environment:
@@ -29,8 +31,6 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - devops-2
   backend:
     build:
       context: ./backend
@@ -39,8 +39,6 @@ services:
       - '8000:8000'
     depends_on:
       - postgresdb
-    networks:
-      - devops-2
   frontend:
     build:
       context: ./frontend
@@ -49,10 +47,9 @@ services:
       - '3000:3000'
     depends_on:
       - backend
-    networks:
-      - devops-2
 volumes:
   postgres_data:
 networks:
-  devops-2:
-    driver: bridge
+  default:
+    external: true
+    name: devops-2
