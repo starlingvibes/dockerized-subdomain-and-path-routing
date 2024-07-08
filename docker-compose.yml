@@ -1,55 +1,58 @@
 version: '3.8'
 services:
-  app:
+  nginx-proxy-manager:
     image: 'jc21/nginx-proxy-manager:latest'
     restart: unless-stopped
     ports:
       - '80:80'
       - '8090:81'
       - '443:443'
-    environment:
-      POSTGRES_DB: hng_devops_app
-      POSTGRES_USER: starlingroot
-      POSTGRES_PASSWORD: starlingroot
     volumes:
       - ./data:/data
       - ./letsencrypt:/etc/letsencrypt
     depends_on:
       - postgresdb
+
   adminer:
     image: adminer
     restart: always
     ports:
       - 8080:8080
+
   postgresdb:
     image: postgres:latest
-    environment:
-      POSTGRES_DB: hng_devops_app
-      POSTGRES_USER: starlingroot
-      POSTGRES_PASSWORD: starlingroot
+    env_file:
+      - .env
     ports:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
       - '8000:8000'
+    env_file:
+      - ./backend/.env
     depends_on:
       - postgresdb
+
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - '3000:3000'
+      - '5173:5173'
+    env_file:
+      - ./frontend/.env
     depends_on:
       - backend
+
 volumes:
   postgres_data:
+
 networks:
   default:
-    external: true
     name: devops-2
