@@ -1,8 +1,8 @@
-FROM node:14-slim
+FROM node:16
 
-WORKDIR /src
+WORKDIR /app
 
-COPY ./package.json ./
+COPY package.json ./
 
 RUN npm install
 
@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 5173
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
